@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wolfie Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .popup {
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  .popup.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  h1, h2 {
+    margin-bottom: 20px;
+  }
+  button {
+    margin: 10px 0;
+    padding: 12px;
+    width: 100%;
+    border: none;
+    border-radius: 6px;
+    background: #0047ba;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: 400;
+    font-family: 'Poppins', sans-serif;
+  }
+  button:hover {
+    background: #003399;
+  }
+  ul {
+    text-align: left;
+    padding-left: 0;
+    list-style: none;
+  }
+  li {
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Title Popup -->
+<div id="titlePopup" class="popup show">
+  <h1>Which Wolfie Profile Are You?</h1>
+  <button id="startBtn">Let's See!</button>
+</div>
+
+<!-- Quiz Popup -->
+<div id="quizPopup" class="popup">
+  <h2 id="question"></h2>
+  <div id="answers"></div>
+</div>
+
+<!-- Result Popup -->
+<div id="resultPopup" class="popup">
+  <h2>Your Top Trait</h2>
+  <ul id="traitList"></ul>
+  <button id="restartBtn">Retake Quiz</button>
+</div>
+
+<script>
+const quizData = [
+  { question: "When working in a group, I:", answers: ["Invite others to join and make sure they feel welcome. (Inclusion)", "Make sure everyone knows what they need to do. (Accountability)", "Suggest creative ways to solve problems. (Innovation)", "Try to understand how everyone feels. (Empathy)"] },
+  { question: "If something is hard, I:", answers: ["Keep trying different ways until I get it. (Growth Mindset)", "Think ahead and plan before starting again. (Strategic Thinking)", "Stick to what’s right even if it’s tough. (Integrity)", "Take brave steps to face it. (Courage)"] },
+  { question: "When I see unfairness, I:", answers: ["Speak up for what’s right. (Equity)", "Work together with others to fix it. (Collaboration)", "Say how I feel honestly and respectfully. (Communication)", "Ask questions to understand more. (Curiosity)"] },
+  { question: "If a plan suddenly changes, I:", answers: ["Share my thoughts openly. (Transparency)", "Think of new, creative solutions. (Creativity)", "Take a deep breath and go with the flow. (Patience)", "Stay calm and bounce back. (Resilience)"] },
+  { question: "At school, I enjoy:", answers: ["Helping classmates learn. (Learner Focus)", "Thinking about the future and setting goals. (Vision)", "Adjusting to new classes or people. (Adaptability)", "Making sure everyone is treated fairly. (Equity)"] },
+  { question: "I show I’m a good teammate by:", answers: ["Encouraging everyone to join in. (Inclusion)", "Owning my responsibilities. (Accountability)", "Offering new and fun ideas. (Creativity)", "Listening and showing I care. (Empathy)"] },
+  { question: "When I get something wrong, I:", answers: ["Try to learn from it. (Growth Mindset)", "Think about how to improve next time. (Strategic Thinking)", "Admit it and do the right thing. (Integrity)", "Take a brave step to try again. (Courage)"] },
+  { question: "My friends would describe me as:", answers: ["A team player. (Collaboration)", "Honest and clear. (Communication)", "Curious and eager to learn. (Curiosity)", "Calm and patient. (Patience)"] },
+  { question: "When solving a problem, I:", answers: ["Think outside the box. (Innovation)", "Say what I think respectfully. (Transparency)", "Adapt to changes easily. (Adaptability)", "Stay focused on doing what’s right. (Integrity)"] },
+  { question: "I feel best when:", answers: ["Others understand how I feel. (Empathy)", "I bounce back from a challenge. (Resilience)", "I help others succeed. (Learner Focus)", "I can see the big picture and plan ahead. (Vision)"] },
+  { question: "During group work, I:", answers: ["Make sure everyone has a voice. (Inclusion)", "Take responsibility for my part. (Accountability)", "Come up with creative ideas. (Creativity)", "Stick with it, even if it’s hard. (Resilience)"] },
+  { question: "When learning something new, I:", answers: ["Ask lots of questions. (Curiosity)", "Try again and again until I get it. (Growth Mindset)", "Plan steps to reach the goal. (Strategic Thinking)", "Share ideas to help the team. (Collaboration)"] },
+  { question: "If I make a mistake:", answers: ["I calmly try again. (Patience)", "I tell the truth about it. (Transparency)", "I try to do better next time. (Learner Focus)", "I stand up and take responsibility. (Courage)"] },
+  { question: "I show leadership when I:", answers: ["Think ahead and guide others. (Vision)", "Stick to my values. (Integrity)", "Speak up for those who aren’t heard. (Equity)", "Welcome all kinds of people. (Inclusion)"] },
+  { question: "I work well in a team because:", answers: ["I help others when they struggle. (Empathy)", "I take charge when needed. (Accountability)", "I bring creative energy. (Innovation)", "I adjust to others’ styles. (Adaptability)"] },
+  { question: "When I'm unsure about something:", answers: ["I look for fair solutions. (Equity)", "I talk to someone honestly. (Transparency)", "I try to see it in a new way. (Creativity)", "I do my best to keep going. (Resilience)"] },
+  { question: "When I’m stuck on a project:", answers: ["I plan my steps clearly. (Strategic Thinking)", "I try again and again. (Growth Mindset)", "I reach out and share ideas. (Communication)", "I look for a new way around the problem. (Innovation)"] },
+  { question: "At school, I try to:", answers: ["Keep learning, no matter what. (Learner Focus)", "Work well with others. (Collaboration)", "Stay calm and keep going. (Patience)", "Try new things. (Curiosity)"] },
+  { question: "I think a good classmate should:", answers: ["Be fair and kind. (Equity)", "Stand up for others. (Courage)", "Welcome new people. (Inclusion)", "Share their ideas clearly. (Communication)"] }
+];
+
+let currentQuestion = 0;
+let traitScores = {};
+
+const titlePopup = document.getElementById("titlePopup");
+const quizPopup = document.getElementById("quizPopup");
+const resultPopup = document.getElementById("resultPopup");
+const questionEl = document.getElementById("question");
+const answersEl = document.getElementById("answers");
+const traitListEl = document.getElementById("traitList");
+const startBtn = document.getElementById("startBtn");
+const restartBtn = document.getElementById("restartBtn");
+
+startBtn.addEventListener("click", () => {
+  fadeOut(titlePopup, () => {
+    quizPopup.classList.add("show");
+    showQuestion();
+  });
+});
+
+restartBtn.addEventListener("click", () => location.reload());
+
+function showQuestion() {
+  const q = quizData[currentQuestion];
+  questionEl.innerHTML = `${currentQuestion + 1}. ${q.question}`;
+  answersEl.innerHTML = "";
+  const labels = ['A','B','C','D'];
+  q.answers.forEach((ans, i) => {
+    const btn = document.createElement("button");
+    btn.innerHTML = `<strong>${labels[i]}.</strong> ${ans}`;
+    btn.onclick = () => selectAnswer(ans);
+    answersEl.appendChild(btn);
+  });
+  fadeIn(quizPopup);
+}
+
+function selectAnswer(ans) {
+  const traitMatch = ans.match(/\((.*?)\)$/);
+  if(traitMatch) {
+    const trait = traitMatch[1];
+    traitScores[trait] = (traitScores[trait] || 0) + 1;
+  }
+  fadeOut(quizPopup, () => {
+    currentQuestion++;
+    if(currentQuestion < quizData.length) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  });
+}
+
+function showResult() {
+  quizPopup.classList.remove("show");
+  const maxScore = Math.max(...Object.values(traitScores));
+  const topTraits = Object.entries(traitScores)
+    .filter(([t,s]) => s === maxScore)
+    .map(([t,s]) => t);
+
+  traitListEl.innerHTML = '';
+  topTraits.forEach(t => {
+    const li = document.createElement("li");
+    li.textContent = `${t} (${traitScores[t]} times)`;
+    traitListEl.appendChild(li);
+  });
+  fadeIn(resultPopup);
+}
+
+function fadeIn(el) {
+  el.style.opacity = 0;
+  el.classList.add("show");
+  setTimeout(()=>{el.style.opacity=1;}, 20);
+}
+
+function fadeOut(el, callback) {
+  el.style.opacity = 0;
+  setTimeout(()=>{el.classList.remove("show"); callback();}, 250);
+}
+</script>
+
+</body>
+</html>
